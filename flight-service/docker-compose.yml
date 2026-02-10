@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    command: --default-authentication-plugin=caching_sha2_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: flight_service
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    networks:
+      - flight-service-sql
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost","-uroot","-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql-vol:/var/lib/mysql
+
+  flight-service:
+    image: flight-service:1.0
+    container_name: flight-service
+    restart: always
+    ports:
+      - "8082:8082"
+    networks:
+      - flight-service-sql
+    environment:
+      MYSQL_HOST: mysql-db
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: flight_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/flight_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+volumes:
+  mysql-vol:
+
+networks:
+  flight-service-sql:
+    driver: bridge
