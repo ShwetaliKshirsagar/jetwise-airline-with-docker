@@ -31,8 +31,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public UserServiceImpl() {
-    }
 
     @Override
     public UserResponse register(RegisterUser registerUser) throws UserAlreadyExistsException {
